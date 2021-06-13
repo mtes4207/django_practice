@@ -30,11 +30,26 @@ class SnippetSerializer(serializers.Serializer):
         instance.save()
         return instance
     
-
-
-class UserSerializer(serializers.ModelSerializer):
-    snippets = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
+'''class UserSerializer(serializers.ModelSerializer):
+    pp = serializers.PrimaryKeyRelatedField(many=True, queryset=Snippet.objects.all())
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'snippet')
+        fields = ('id', 'username', 'pp')'''
+
+
+class HtmlSnippetSerializer(serializers.HyperlinkedModelSerializer):
+    owner = serializers.ReadOnlyField(source='owner.username')
+    highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
+
+    class Meta:
+        model = Snippet
+        fields = ('url', 'id', 'highlight', 'owner',
+                  'title', 'code', 'linenos', 'language', 'style')
+
+class UserSerializer(serializers.HyperlinkedModelSerializer):
+    pp = serializers.HyperlinkedRelatedField(many=True, view_name='snippet-detail', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ('url', 'id', 'username', 'pp')
